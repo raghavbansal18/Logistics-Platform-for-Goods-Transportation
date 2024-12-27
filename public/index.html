@@ -1,0 +1,61 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Logistics Platform - User</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Book a Ride</h1>
+        <div class="card p-4">
+            <div class="mb-3">
+                <label for="userId" class="form-label">User ID</label>
+                <input type="text" class="form-control" id="userId" placeholder="Enter your user ID">
+            </div>
+            <div class="mb-3">
+                <label for="pickup" class="form-label">Pickup Location</label>
+                <input type="number" class="form-control" id="pickup" placeholder="Enter pickup location (numeric)">
+            </div>
+            <div class="mb-3">
+                <label for="dropoff" class="form-label">Drop-off Location</label>
+                <input type="number" class="form-control" id="dropoff" placeholder="Enter drop-off location (numeric)">
+            </div>
+            <div class="mb-3">
+                <label for="vehicleType" class="form-label">Vehicle Type</label>
+                <select class="form-select" id="vehicleType">
+                    <option value="Small">Small</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Large">Large</option>
+                </select>
+            </div>
+            <button class="btn btn-primary w-100" id="bookBtn">Book Now</button>
+        </div>
+
+        <div class="mt-4">
+            <h2>Booking Status</h2>
+            <div class="card p-3" id="bookingStatus">
+                <p>No bookings yet.</p>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <h2>Driver Location</h2>
+            <div class="card p-3" id="driverLocation">
+                <p>No active tracking.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+    <!-- Custom JS -->
+    <script src="client.js"></script>
+</body>
+</html>

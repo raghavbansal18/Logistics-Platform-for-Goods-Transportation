@@ -1,0 +1,133 @@
+<!-- public/driver.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Logistics Platform - Driver</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Driver Dashboard</h1>
+        <div class="card p-4 mb-4">
+            <div class="mb-3">
+                <label for="driverId" class="form-label">Driver ID</label>
+                <input type="text" class="form-control" id="driverId" placeholder="Enter your driver ID">
+            </div>
+            <button class="btn btn-success w-100" id="registerDriverBtn">Register Driver</button>
+        </div>
+
+        <div>
+            <h2>Available Bookings</h2>
+            <div class="card p-3" id="availableBookings">
+                <p>No available bookings.</p>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <h2>Current Booking Status</h2>
+            <div class="card p-3" id="currentStatus">
+                <p>No active booking.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+    <!-- Custom JS -->
+    <script>
+        const socket = io();
+
+        document.getElementById('registerDriverBtn').addEventListener('click', () => {
+            const driverId = document.getElementById('driverId').value;
+            if (driverId) {
+                socket.emit('registerDriver', driverId);
+                alert('Driver Registered!');
+                // Disable registration after successful registration
+                document.getElementById('registerDriverBtn').disabled = true;
+                document.getElementById('driverId').disabled = true;
+            } else {
+                alert('Please enter a valid Driver ID.');
+            }
+        });
+
+        // Listen for new bookings
+        socket.on('newBooking', (booking) => {
+            const bookingsDiv = document.getElementById('availableBookings');
+            if (bookingsDiv.querySelector('p')) {
+                bookingsDiv.innerHTML = ''; // Clear the "No available bookings." message
+            }
+
+            const bookingElement = document.createElement('div');
+            bookingElement.classList.add('mb-3', 'border', 'p-3', 'rounded');
+            bookingElement.innerHTML = `
+                <p><strong>Booking ID:</strong> ${booking.id}</p>
+                <p><strong>Pickup:</strong> ${booking.pickup}</p>
+                <p><strong>Drop-off:</strong> ${booking.dropoff}</p>
+                <p><strong>Vehicle Type:</strong> ${booking.vehicleType}</p>
+                <p><strong>Estimated Cost:</strong> $${booking.estimatedCost}</p>
+                <button class="btn btn-primary btn-sm" onclick="acceptBooking(${booking.id})">Accept Booking</button>
+            `;
+            bookingsDiv.appendChild(bookingElement);
+        });
+
+        function acceptBooking(bookingId) {
+            const driverId = document.getElementById('driverId').value;
+            fetch('/api/driver/accept', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ driverId, bookingId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Booking Accepted!');
+                    document.getElementById('currentStatus').innerHTML = `
+                        <p><strong>Current Booking ID:</strong> ${data.booking.id}</p>
+                        <p><strong>Status:</strong> ${data.booking.status}</p>
+                    `;
+                    // Remove the accepted booking from available bookings
+                    const bookingsDiv = document.getElementById('availableBookings');
+                    bookingsDiv.innerHTML = '<p>No available bookings.</p>';
+                } else {
+                    alert('Failed to accept booking.');
+                }
+            });
+        }
+
+        // Function to update status (for demo purposes)
+        function updateStatus(status) {
+            const driverId = document.getElementById('driverId').value;
+            fetch('/api/driver/status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ driverId, status, location: Math.floor(Math.random() * 100) })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('currentStatus').innerHTML = `
+                        <p><strong>Current Booking ID:</strong> ${data.booking.id}</p>
+                        <p><strong>Status:</strong> ${data.booking.status}</p>
+                    `;
+                }
+            });
+        }
+
+        // Example: Update status every 10 seconds
+        setInterval(() => {
+            const statuses = ['En Route', 'Goods Collected', 'Delivered'];
+            const currentStatusText = document.getElementById('currentStatus').innerText;
+            if (currentStatusText.includes('Current Booking ID')) {
+                const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+                updateStatus(randomStatus);
+            }
+        }, 10000);
+    </script>
+</body>
+</html>
